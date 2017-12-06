@@ -63,7 +63,7 @@ function JingleSession(opts) {
 
         if (!ACTIONS[action]) {
             self._log('error', 'Invalid action: ' + action);
-            cb({condition: 'bad-request'});
+            cb({ condition: 'bad-request' });
             return next();
         }
 
@@ -171,8 +171,9 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         message = this.sid + ': ' + message;
         this.emit('log:' + level, message);
     },
-    
+
     send: function (action, data) {
+        console.error(this);
         data = data || {};
         data.sid = this.sid;
         data.action = action;
@@ -198,14 +199,27 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             this.pendingAction = false;
         }
 
-        this.emit('send', {
+        const sendData = {
             to: this.peer,
             id: uuid.v4(),
             type: 'set',
-            jingle: data
-        });
+            // jingle: data
+        };
+        if (this.pc.config.useJingle) {
+            sendData.jingle = data;
+        } else {
+            sendData.type = 'chat';
+            sendData.signal = {};
+            sendData.signal.callinitiator = this.parent.jid.bare;
+            sendData.signal.action = 'OFFER';
+            sendData.signal.type = 'AUDIO';
+            sendData.signal.starttime = Date.now();
+            sendData.signal.sdp = data;
+        }
+
+        this.emit('send', sendData);
     },
-    
+
     process: function (action, changes, cb) {
         this.processingQueue.push({
             action: action,
@@ -213,25 +227,25 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             cb: cb
         });
     },
-    
+
     start: function () {
         this._log('error', 'Can not start base sessions');
         this.end('unsupported-applications', true);
     },
-    
+
     accept: function () {
         this._log('error', 'Can not accept base sessions');
         this.end('unsupported-applications');
     },
-    
+
     cancel: function () {
         this.end('cancel');
     },
-    
+
     decline: function () {
         this.end('decline');
     },
-    
+
     end: function (reason, silent) {
         this.state = 'ended';
 
@@ -246,13 +260,13 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                 condition: reason
             };
         }
-    
+
         if (!silent) {
             this.send('session-terminate', {
                 reason: reason
             });
         }
-    
+
         this.emit('terminated', this, reason);
     },
 
