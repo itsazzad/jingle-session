@@ -173,7 +173,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     send: function (action, data) {
-        console.error(this);
         data = data || {};
         data.sid = this.sid;
         data.action = action;
@@ -208,13 +207,20 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         if (this.pc.config.useJingle) {
             sendData.jingle = data;
         } else {
-            sendData.type = 'chat';
-            sendData.signal = {};
-            sendData.signal.callinitiator = this.parent.jid.bare;
-            sendData.signal.action = 'OFFER';
-            sendData.signal.type = 'AUDIO';
-            sendData.signal.starttime = Date.now();
-            sendData.signal.sdp = data;
+            console.error('JingleSession.send', action, data);
+            if (action === 'session-initiate') {
+                sendData.type = 'chat';
+                sendData.signal = {
+                    action: 'OFFER',
+                    callinitiator: this.parent.jid.bare,
+                    sdp: window.btoa(data),
+                    starttime: Date.now(),
+                    type: 'AUDIO',
+                };
+            } else {
+                console.error('TO BE REMOVED SOON', data);
+                sendData.others = data;
+            }
         }
 
         this.emit('send', sendData);
