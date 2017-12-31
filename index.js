@@ -3,8 +3,6 @@ var uuid = require('uuid');
 var async = require('async');
 var extend = require('extend-object');
 var WildEmitter = require('wildemitter');
-var customConsole = require('../custom-console');
-var sourceFileName = 'jingle-session';
 
 
 var ACTIONS = {
@@ -31,7 +29,6 @@ var ACTIONS = {
 
 
 function JingleSession(opts) {
-    customConsole(sourceFileName, arguments.callee.name, ...arguments);
     WildEmitter.call(this);
 
     var self = this;
@@ -176,7 +173,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     send: function (action, data) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         data = data || {};
         data.sid = this.sid;
         data.action = action;
@@ -232,7 +228,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     process: function (action, changes, cb) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         this.processingQueue.push({
             action: action,
             changes: changes,
@@ -241,29 +236,24 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     start: function () {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         this._log('error', 'Can not start base sessions');
         this.end('unsupported-applications', true);
     },
 
     accept: function () {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         this._log('error', 'Can not accept base sessions');
         this.end('unsupported-applications');
     },
 
     cancel: function () {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         this.end('cancel');
     },
 
     decline: function () {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         this.end('decline');
     },
 
     end: function (reason, silent) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         this.state = 'ended';
 
         this.processingQueue.kill();
@@ -288,7 +278,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     onSessionTerminate: function (changes, cb) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         this.end(changes.reason, true);
         cb();
     },
@@ -299,7 +288,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     // However, a session-info action with no associated payload
     // is acceptable (works like a ping).
     onSessionInfo: function (changes, cb) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         var okKeys = {
             sid: true,
             action: true,
@@ -328,7 +316,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     // It is mandatory to reply to a description-info action with 
     // an unsupported-info error if the info isn't recognized.
     onDescriptionInfo: function (changes, cb) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         cb({
             type: 'modify',
             condition: 'feature-not-implemented',
@@ -339,7 +326,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     // It is mandatory to reply to a transport-info action with 
     // an unsupported-info error if the info isn't recognized.
     onTransportInfo: function (changes, cb) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         cb({
             type: 'modify',
             condition: 'feature-not-implemented',
@@ -350,7 +336,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     // It is mandatory to reply to a content-add action with either
     // a content-accept or content-reject.
     onContentAdd: function (changes, cb) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         // Allow ack for the content-add to be sent.
         cb();
 
@@ -365,7 +350,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     // It is mandatory to reply to a transport-add action with either
     // a transport-accept or transport-reject.
     onTransportReplace: function (changes, cb) {
-        customConsole(sourceFileName, arguments.callee.name, ...arguments);
         // Allow ack for the transport-replace be sent.
         cb();
 
