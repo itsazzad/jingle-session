@@ -63,7 +63,7 @@ function JingleSession(opts) {
 
         if (!ACTIONS[action]) {
             self._log('error', 'Invalid action: ' + action);
-            cb({ condition: 'bad-request' });
+            cb({condition: 'bad-request'});
             return next();
         }
 
@@ -225,6 +225,13 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         }
 
         this.emit('send', sendData);
+
+        // this.emit('send', {
+        //     to: this.peer,
+        //     id: uuid.v4(),
+        //     type: 'set',
+        //     jingle: data
+        // });
     },
 
     process: function (action, changes, cb) {
