@@ -171,7 +171,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         message = this.sid + ': ' + message;
         this.emit('log:' + level, message);
     },
-
+    
     send: function (action, data) {
         data = data || {};
         data.sid = this.sid;
@@ -233,7 +233,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         //     jingle: data
         // });
     },
-
+    
     process: function (action, changes, cb) {
         this.processingQueue.push({
             action: action,
@@ -241,25 +241,25 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             cb: cb
         });
     },
-
+    
     start: function () {
         this._log('error', 'Can not start base sessions');
         this.end('unsupported-applications', true);
     },
-
+    
     accept: function () {
         this._log('error', 'Can not accept base sessions');
         this.end('unsupported-applications');
     },
-
+    
     cancel: function () {
         this.end('cancel');
     },
-
+    
     decline: function () {
         this.end('decline');
     },
-
+    
     end: function (reason, silent) {
         this.state = 'ended';
 
@@ -274,13 +274,13 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                 condition: reason
             };
         }
-
+    
         if (!silent) {
             this.send('session-terminate', {
                 reason: reason
             });
         }
-
+    
         this.emit('terminated', this, reason);
     },
 
