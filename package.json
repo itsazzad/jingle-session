@@ -2,9 +2,10 @@
   "name": "jingle-session",
   "version": "2.0.3",
   "author": "Lance Stout <lance@andyet.net>",
-  "bugs": "https://github.com/otalk/jingle-session/issues",
+  "bugs": "https://github.com/itsazzad/jingle-session/issues",
   "contributors": [
-    "Philipp Hancke <fippo@andyet.net>"
+    "Philipp Hancke <fippo@andyet.net>",
+    "Sazzad Hossain Khan <itsazzad@gmail.com>"
   ],
   "dependencies": {
     "async": "^2.5.0",
@@ -17,12 +18,12 @@
     "covert": "^1.0.0",
     "jshint": "^2.5.5",
     "nsp": "^0.2.6",
-    "precommit-hook": "^3.0.0",
+    "precommit-hook": "^1.0.7",
     "tap-spec": "^0.2.1",
     "tape": "^2.14.0",
     "uglify-js": "^2.4.15"
   },
-  "homepage": "https://github.com/otalk/jingle-session",
+  "homepage": "https://github.com/itsazzad/jingle-session",
   "keywords": [
     "xmpp",
     "jingle"
@@ -31,14 +32,10 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/otalk/jingle-session.git"
+    "url": "https://github.com/itsazzad/jingle-session.git"
   },
   "scripts": {
     "audit": "make audit",
-    "build": "make build",
-    "lint": "jshint .",
-    "validate": "npm ls"
-  },
-  "pre-commit": [
-  ]
+    "build": "make build"
+  }
 }
