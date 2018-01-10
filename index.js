@@ -171,11 +171,14 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         message = this.sid + ': ' + message;
         this.emit('log:' + level, message);
     },
-    
+
     send: function (action, data) {
+        console.error('XXX', action, data);
         data = data || {};
         data.sid = this.sid;
-        data.action = action;
+        if(!data.action){
+            data.action = action;
+        }
 
         var requirePending = {
             'session-inititate': true,
@@ -192,8 +195,8 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             'source-remove': true
         };
 
-        if (requirePending[action]) {
-            this.pendingAction = action;
+        if (requirePending[this.mappedActions(action)]) {
+            this.pendingAction = this.mappedActions(action);
         } else {
             this.pendingAction = false;
         }
@@ -201,39 +204,18 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         const sendData = {
             to: this.peer,
             id: uuid.v4(),
-            type: 'set',
-            // jingle: data
+            type: data.type ? data.type : 'set',
         };
-        if (this.pc.config.useJingle) {
-            console.error('useJingle connect:signal:message', this.pc.config.useJingle, action, data);
-            sendData.jingle = data;
+        if (this.useJingle === false) {
+            sendData.signal = data;
         } else {
-            console.error('!useJingle connect:signal:message', this.pc.config.useJingle, action, data);
-            if (action === 'session-initiate') {
-                sendData.type = 'chat';
-                sendData.signal = {
-                    action: 'OFFER',
-                    callinitiator: this.parent.jid.bare,
-                    sdp: window.btoa(data),
-                    starttime: Date.now(),
-                    type: 'AUDIO',
-                };
-            } else {
-                console.error('TO BE REMOVED SOON', data);
-                sendData.others = data;
-            }
+            sendData.jingle = data;
         }
+        console.error('XXX', sendData);
 
         this.emit('send', sendData);
-
-        // this.emit('send', {
-        //     to: this.peer,
-        //     id: uuid.v4(),
-        //     type: 'set',
-        //     jingle: data
-        // });
     },
-    
+
     process: function (action, changes, cb) {
         this.processingQueue.push({
             action: action,
@@ -241,25 +223,25 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             cb: cb
         });
     },
-    
+
     start: function () {
         this._log('error', 'Can not start base sessions');
         this.end('unsupported-applications', true);
     },
-    
+
     accept: function () {
         this._log('error', 'Can not accept base sessions');
         this.end('unsupported-applications');
     },
-    
+
     cancel: function () {
         this.end('cancel');
     },
-    
+
     decline: function () {
         this.end('decline');
     },
-    
+
     end: function (reason, silent) {
         this.state = 'ended';
 
@@ -274,13 +256,13 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                 condition: reason
             };
         }
-    
+
         if (!silent) {
             this.send('session-terminate', {
                 reason: reason
             });
         }
-    
+
         this.emit('terminated', this, reason);
     },
 
@@ -289,7 +271,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         cb();
     },
 
-    // It is mandatory to reply to a session-info action with 
+    // It is mandatory to reply to a session-info action with
     // an unsupported-info error if the info isn't recognized.
     //
     // However, a session-info action with no associated payload
@@ -320,7 +302,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         }
     },
 
-    // It is mandatory to reply to a description-info action with 
+    // It is mandatory to reply to a description-info action with
     // an unsupported-info error if the info isn't recognized.
     onDescriptionInfo: function (changes, cb) {
         cb({
@@ -330,7 +312,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         });
     },
 
-    // It is mandatory to reply to a transport-info action with 
+    // It is mandatory to reply to a transport-info action with
     // an unsupported-info error if the info isn't recognized.
     onTransportInfo: function (changes, cb) {
         cb({
@@ -369,5 +351,12 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     }
 });
 
+JingleSession.prototype.mappedActions = function (action) {
+    var mappedActions = {
+        OFFER: 'session-initiate',
+        'session-initiate': 'OFFER',
+    };
+    return mappedActions[action] ? mappedActions[action] : action;
+};
 
 module.exports = JingleSession;
