@@ -173,7 +173,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     send: function (action, data) {
-        console.error('XXX', action, data);
         data = data || {};
         data.sid = this.sid;
         if(!data.action){
@@ -194,6 +193,9 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             'source-add': true,
             'source-remove': true
         };
+        var requireSignal = {
+            'OFFER': true,
+        };
 
         if (requirePending[this.mappedActions(action)]) {
             this.pendingAction = this.mappedActions(action);
@@ -204,16 +206,17 @@ JingleSession.prototype = extend(JingleSession.prototype, {
         const sendData = {
             to: this.peer,
             id: uuid.v4(),
-            type: data.type ? 'chat' : 'set',
+            type: (this.useJingle === false) ? 'chat' : 'set',
         };
         if (this.useJingle === false) {
             sendData.signal = data;
+            if (requireSignal[this.mappedActions(action)]) {
+                this.emit('send', sendData);
+            }
         } else {
             sendData.jingle = data;
+            this.emit('send', sendData);
         }
-        console.error('XXX', sendData);
-
-        this.emit('send', sendData);
     },
 
     process: function (action, changes, cb) {
