@@ -205,7 +205,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
 
         const sendData = {
             to: this.peer,
-            id: uuid.v4(),
+            id: this.sid ? this.sid : uuid.v4(),
             type: (this.useJingle === false) ? 'chat' : 'set',
         };
         if (this.useJingle === false) {
