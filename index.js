@@ -173,11 +173,10 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     send: function (action, data) {
+        console.error('JJJ', 'jingle-session', 'send', action, data);
         data = data || {};
         data.sid = this.sid;
-        if(!data.action){
-            data.action = action;
-        }
+        data.action = action;
 
         var requirePending = {
             'session-inititate': true,
@@ -193,24 +192,42 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             'source-add': true,
             'source-remove': true
         };
-        var requireSignal = {
-            'OFFER': true,
-        };
 
-        if (requirePending[this.mappedActions(action)]) {
-            this.pendingAction = this.mappedActions(action);
+        if (requirePending[action]) {
+            this.pendingAction = action;
         } else {
             this.pendingAction = false;
         }
 
         const sendData = {
             to: this.peer,
-            id: this.sid ? this.sid : uuid.v4(),
+            id: data.sid ? data.sid : uuid.v4(),
             type: (this.useJingle === false) ? 'chat' : 'set',
         };
         if (this.useJingle === false) {
-            sendData.signal = data;
-            if (requireSignal[this.mappedActions(action)]) {
+            var requireSignal = {
+                'OFFER': true,
+                'ANSWER': true,
+                'ADD_REMOTE_ICE_CANDIDATE': true,
+            };
+            var mappedAction = this.mappedActions(action);
+
+            if (requireSignal[mappedAction]) {
+                sendData.signal = {
+                    action: mappedAction,
+                    callinitiator: this.parent.jid.bare,
+                    sdp: data.sdp ? window.btoa(data.sdp) : undefined,
+                    duration: '00 : 00',
+                    starttime: Date.now(),
+                    type: 'AUDIO',
+                    label: '0',
+                    candidate: data.candidate ?
+                        (data.candidate.candidate ?
+                            window.btoa(data.candidate.candidate) :
+                            undefined) :
+                        undefined,
+                };
+                console.error('JJJ', 'jingle-session', 'emit:send', sendData);
                 this.emit('send', sendData);
             }
         } else {
@@ -318,6 +335,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     // It is mandatory to reply to a transport-info action with
     // an unsupported-info error if the info isn't recognized.
     onTransportInfo: function (changes, cb) {
+        console.error('JJJ', 'jingle-session', 'onTransportInfo', changes);
         cb({
             type: 'modify',
             condition: 'feature-not-implemented',
@@ -358,6 +376,10 @@ JingleSession.prototype.mappedActions = function (action) {
     var mappedActions = {
         OFFER: 'session-initiate',
         'session-initiate': 'OFFER',
+        ANSWER: 'session-accept',
+        'session-accept': 'ANSWER',
+        ADD_REMOTE_ICE_CANDIDATE: 'transport-info',
+        'transport-info': 'ADD_REMOTE_ICE_CANDIDATE',
     };
     return mappedActions[action] ? mappedActions[action] : action;
 };
