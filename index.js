@@ -173,7 +173,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     },
 
     send: function (action, data) {
-        console.error('JJJ', 'jingle-session', 'send', action, data);
         data = data || {};
         data.sid = this.sid;
         data.action = action;
@@ -216,18 +215,20 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                 sendData.signal = {
                     action: mappedAction,
                     callinitiator: this.parent.jid.bare,
-                    sdp: data.sdp ? window.btoa(data.sdp) : undefined,
                     duration: '00 : 00',
                     starttime: Date.now(),
                     type: 'AUDIO',
-                    label: '0',
-                    candidate: data.candidate ?
-                        (data.candidate.candidate ?
-                            window.btoa(data.candidate.candidate) :
-                            undefined) :
-                        undefined,
                 };
-                console.error('JJJ', 'jingle-session', 'emit:send', sendData);
+                if (data.sdp) {
+                    sendData.signal.sdp = window.btoa(data.sdp);
+                }
+                if (data.candidate) {
+                    sendData.signal.label = '0';
+                    sendData.signal.candidate = data.candidate.candidate ?
+                        window.btoa(data.candidate.candidate) :
+                        undefined;
+                }
+
                 this.emit('send', sendData);
             }
         } else {
@@ -335,7 +336,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     // It is mandatory to reply to a transport-info action with
     // an unsupported-info error if the info isn't recognized.
     onTransportInfo: function (changes, cb) {
-        console.error('JJJ', 'jingle-session', 'onTransportInfo', changes);
         cb({
             type: 'modify',
             condition: 'feature-not-implemented',
