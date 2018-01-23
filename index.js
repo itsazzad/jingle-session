@@ -62,7 +62,7 @@ function JingleSession(opts) {
         self._log('debug', action);
 
         if (!ACTIONS[action]) {
-            self._log('error', 'Invalid action: ' + action);
+            self._log('error', 'Invalid action: ' + action, task);
             cb({condition: 'bad-request'});
             return next();
         }
@@ -82,7 +82,7 @@ util.inherits(JingleSession, WildEmitter);
 Object.keys(ACTIONS).forEach(function (action) {
     var method = ACTIONS[action];
     JingleSession.prototype[method] = function (changes, cb) {
-        this._log('error', 'Unsupported action: ' + action);
+        this._log('error', 'Unsupported action: ' + action, changes);
         cb();
     };
 });
@@ -167,9 +167,9 @@ Object.defineProperties(JingleSession.prototype, {
 });
 
 JingleSession.prototype = extend(JingleSession.prototype, {
-    _log: function (level, message) {
+    _log: function (level, message, details) {
         message = this.sid + ': ' + message;
-        this.emit('log:' + level, message);
+        this.emit('log:' + level, message, details);
     },
 
     send: function (action, data) {
