@@ -212,15 +212,21 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             var mappedAction = this.mappedActions(action);
 
             if (requireSignal[mappedAction]) {
+                var type = 'AUDIO';
+                data.jingle.contents.forEach(function (content, idx) {
+                    if (content.name === 'video') {
+                        type = 'VIDEO';
+                    }
+                });
+
                 sendData.signal = {
                     action: mappedAction,
                     callinitiator: this.parent.jid.bare,
                     duration: '00 : 00',
                     starttime: Date.now(),
-                    type: 'AUDIO',
+                    type,
                 };
                 if (data.sdp) {
-                    console.error('send:rawsdp', data.sdp);
                     sendData.signal.sdp = window.btoa(data.sdp);
                 }
                 if (data.candidate) {
