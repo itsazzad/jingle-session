@@ -220,6 +220,7 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                     type: 'AUDIO',
                 };
                 if (data.sdp) {
+                    console.error('send:rawsdp', data.sdp);
                     sendData.signal.sdp = window.btoa(data.sdp);
                 }
                 if (data.candidate) {
