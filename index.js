@@ -207,18 +207,18 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             var requireSignal = {
                 'OFFER': true,
                 'ANSWER': true,
+                'BUSY': true,
                 'ADD_REMOTE_ICE_CANDIDATE': true,
             };
             var mappedAction = this.mappedActions(action);
 
             if (requireSignal[mappedAction]) {
                 var type = 'AUDIO';
-                data.jingle.contents.forEach(function (content, idx) {
+                this.pc.localDescription.contents.forEach(function (content, idx) {
                     if (content.name === 'video') {
                         type = 'VIDEO';
                     }
                 });
-
                 sendData.signal = {
                     action: mappedAction,
                     callinitiator: this.parent.jid.bare,
@@ -235,7 +235,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                         window.btoa(data.candidate.candidate) :
                         undefined;
                 }
-
                 this.emit('send', sendData);
             }
         } else {
@@ -385,6 +384,8 @@ JingleSession.prototype.mappedActions = function (action) {
         'session-initiate': 'OFFER',
         ANSWER: 'session-accept',
         'session-accept': 'ANSWER',
+        BUSY: 'session-terminate',
+        'session-terminate': 'BUSY',
         ADD_REMOTE_ICE_CANDIDATE: 'transport-info',
         'transport-info': 'ADD_REMOTE_ICE_CANDIDATE',
     };
