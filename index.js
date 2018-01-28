@@ -207,10 +207,12 @@ JingleSession.prototype = extend(JingleSession.prototype, {
             var requireSignal = {
                 'OFFER': true,
                 'ANSWER': true,
+                'CANCEL': true,
                 'BUSY': true,
+                'FINISH': true,
                 'ADD_REMOTE_ICE_CANDIDATE': true,
             };
-            var mappedAction = this.mappedActions(action);
+            var mappedAction = this.mappedActions(action, data.reason ? data.reason.condition : undefined);
 
             if (requireSignal[mappedAction]) {
                 var type = 'AUDIO';
@@ -378,18 +380,26 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     }
 });
 
-JingleSession.prototype.mappedActions = function (action) {
+JingleSession.prototype.mappedActions = function (action, type) {
     var mappedActions = {
         OFFER: 'session-initiate',
         'session-initiate': 'OFFER',
         ANSWER: 'session-accept',
         'session-accept': 'ANSWER',
+        CANCEL: 'session-terminate',
         BUSY: 'session-terminate',
-        'session-terminate': 'BUSY',
+        FINISH: 'session-terminate',
+        'session-terminate': {
+            cancel: 'CANCEL',
+            decline: 'BUSY',
+            success: 'FINISH',
+        },
         ADD_REMOTE_ICE_CANDIDATE: 'transport-info',
         'transport-info': 'ADD_REMOTE_ICE_CANDIDATE',
     };
-    return mappedActions[action] ? mappedActions[action] : action;
+    return mappedActions[action] ?
+        ((type && mappedActions[action][type]) ? mappedActions[action][type] : mappedActions[action]) :
+        action;
 };
 
 module.exports = JingleSession;
