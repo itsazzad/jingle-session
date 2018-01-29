@@ -211,8 +211,10 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                 'BUSY': true,
                 'FINISH': true,
                 'ADD_REMOTE_ICE_CANDIDATE': true,
+                'RINGING': true,
+                'NOANSWER': true,
             };
-            var mappedAction = this.mappedActions(action, data.reason ? data.reason.condition : undefined);
+            var mappedAction = this.mappedActions(action, data);
 
             if (requireSignal[mappedAction]) {
                 var type = 'AUDIO';
@@ -380,26 +382,42 @@ JingleSession.prototype = extend(JingleSession.prototype, {
     }
 });
 
-JingleSession.prototype.mappedActions = function (action, type) {
+JingleSession.prototype.mappedActions = function (action, data) {
+    console.error('ADADAD 1', action, data);
+    if(data){
+        var type;
+        if(data.reason){
+            type = data.reason.condition;
+        }else if(data.ringing){
+            type = 'ringing';
+        }
+    }
+
     var mappedActions = {
-        OFFER: 'session-initiate',
         'session-initiate': 'OFFER',
-        ANSWER: 'session-accept',
+        OFFER: 'session-initiate',
         'session-accept': 'ANSWER',
-        CANCEL: 'session-terminate',
-        BUSY: 'session-terminate',
-        FINISH: 'session-terminate',
+        ANSWER: 'session-accept',
         'session-terminate': {
             cancel: 'CANCEL',
             decline: 'BUSY',
             success: 'FINISH',
+            timeout: 'NOANSWER',
         },
-        ADD_REMOTE_ICE_CANDIDATE: 'transport-info',
+        CANCEL: 'session-terminate',
+        BUSY: 'session-terminate',
+        FINISH: 'session-terminate',
+        NOANSWER: 'session-terminate',
         'transport-info': 'ADD_REMOTE_ICE_CANDIDATE',
+        ADD_REMOTE_ICE_CANDIDATE: 'transport-info',
+        'session-info': 'RINGING',
+        RINGING: 'session-info',
     };
-    return mappedActions[action] ?
+    var mappedAction = mappedActions[action] ?
         ((type && mappedActions[action][type]) ? mappedActions[action][type] : mappedActions[action]) :
         action;
+    console.error('ADADAD 2', mappedAction);
+    return mappedAction;
 };
 
 module.exports = JingleSession;
