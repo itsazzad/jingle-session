@@ -212,17 +212,14 @@ JingleSession.prototype = extend(JingleSession.prototype, {
                 'FINISH': true,
                 'ADD_REMOTE_ICE_CANDIDATE': true,
                 'RINGING': true,
+                'VIDEO_OFF': true,
+                'VIDEO_ON': true,
                 'NOANSWER': true,
             };
             var mappedAction = this.mappedActions(action, data);
 
             if (requireSignal[mappedAction]) {
-                var type = 'AUDIO';
-                this.pc.localDescription.contents.forEach(function (content, idx) {
-                    if (content.name === 'video') {
-                        type = 'VIDEO';
-                    }
-                });
+                var type = this.getCallType().toUpperCase();
                 sendData.signal = {
                     action: mappedAction,
                     callinitiator: this.parent.jid.bare,
@@ -390,6 +387,12 @@ JingleSession.prototype.mappedActions = function (action, data) {
             type = data.reason.condition;
         }else if(data.ringing){
             type = 'ringing';
+        }else if(data.hold){
+            type = 'hold';
+        }else if(data.active){
+            type = 'active';
+        } else {
+            console.error('ACTION_TYPE_UNDEFINED', {action, data});
         }
     }
 
@@ -410,14 +413,30 @@ JingleSession.prototype.mappedActions = function (action, data) {
         NOANSWER: 'session-terminate',
         'transport-info': 'ADD_REMOTE_ICE_CANDIDATE',
         ADD_REMOTE_ICE_CANDIDATE: 'transport-info',
-        'session-info': 'RINGING',
+        'session-info': {
+            ringing: 'RINGING',
+            hold: 'VIDEO_OFF',
+            active: 'VIDEO_ON',
+        },
         RINGING: 'session-info',
+        VIDEO_OFF: 'session-info',
+        VIDEO_ON: 'session-info',
     };
     var mappedAction = mappedActions[action] ?
         ((type && mappedActions[action][type]) ? mappedActions[action][type] : mappedActions[action]) :
         action;
     console.error('ADADAD 2', mappedAction);
     return mappedAction;
+};
+
+JingleSession.prototype.getCallType = function () {
+    var type = 'audio';
+    this.pc.localDescription.contents.forEach(function (content) {
+        if (content.name === 'video') {
+            type = 'video';
+        }
+    });
+    return type;
 };
 
 module.exports = JingleSession;
