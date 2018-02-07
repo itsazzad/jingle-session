@@ -380,7 +380,6 @@ JingleSession.prototype = extend(JingleSession.prototype, {
 });
 
 JingleSession.prototype.mappedActions = function (action, data) {
-    console.error('ADADAD 1', action, data);
     if(data){
         var type;
         if(data.reason){
@@ -425,7 +424,6 @@ JingleSession.prototype.mappedActions = function (action, data) {
     var mappedAction = mappedActions[action] ?
         ((type && mappedActions[action][type]) ? mappedActions[action][type] : mappedActions[action]) :
         action;
-    console.error('ADADAD 2', mappedAction);
     return mappedAction;
 };
 
