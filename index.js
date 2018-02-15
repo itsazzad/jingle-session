@@ -390,8 +390,6 @@ JingleSession.prototype.mappedActions = function (action, data) {
             type = 'hold';
         }else if(data.active){
             type = 'active';
-        } else {
-            console.error('ACTION_TYPE_UNDEFINED', {action, data});
         }
     }
 
