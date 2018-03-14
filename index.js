@@ -380,15 +380,15 @@ JingleSession.prototype = extend(JingleSession.prototype, {
 });
 
 JingleSession.prototype.mappedActions = function (action, data) {
-    if(data){
-        var type;
-        if(data.reason){
+    var type;
+    if (data) {
+        if (data.reason) {
             type = data.reason.condition;
-        }else if(data.ringing){
+        } else if (data.ringing) {
             type = 'ringing';
-        }else if(data.hold){
+        } else if (data.hold) {
             type = 'hold';
-        }else if(data.active){
+        } else if (data.active) {
             type = 'active';
         }
     }
@@ -425,9 +425,13 @@ JingleSession.prototype.mappedActions = function (action, data) {
     return mappedAction;
 };
 
-JingleSession.prototype.getCallType = function () {
+JingleSession.prototype.getCallType = function (description) {
     var type = 'audio';
-    this.pc.localDescription.contents.forEach(function (content) {
+    var target = 'localDescription';
+    if (description === 'remote') {
+        target = 'remoteDescription';
+    }
+    this.pc[target].contents.forEach(function (content) {
         if (content.name === 'video') {
             type = 'video';
         }
